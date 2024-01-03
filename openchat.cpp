@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 using namespace std;
 
@@ -37,13 +38,13 @@ class User {
 vector<string> solution(vector<string> record) {
     vector<string> answer;
     // 유저를 추적하기 위한 벡터
-    vector<User> userList(record.size());
+    unordered_map<string, User> userMap;
 
     // 배열 읽어들이는 while loop
-    for (int i = 0; i < record.size(); i++) {
-        string action = getAction(record[i]);
-        string id = getId(record[i]);
-        string nickname = getNickname(record[i]);
+    for (const string& rec : record) {
+        string action = getAction(rec);
+        string id = getId(rec);
+        string nickname = getNickname(rec);
 
         // 첫 키워드 읽어서 액션 결정.
         User user;
@@ -53,64 +54,30 @@ vector<string> solution(vector<string> record) {
         switch (actionChar) {
             // Enter : 객체 생성 및 초기화
             case 'E':
-                isExist = false;
-                // 기존에 입장 내역이 있는 경우
-                for (int j = 0; j < userList.size(); j++) {
-                    if (userList[j].getId() == id) {
-                    userList[j].updateNickname(nickname);
-                    isExist = true;
-                    break;
-                    }
-                }
-
-                if (!isExist) {
-                    User user(id, nickname, true);
-                    userList.push_back(user);
-                }
-                
+            // Change : 객체 유지 및 닉네임 변경
+            case 'C':
+                userMap[id] = User(id, nickname, true);
                 break;
-
             // Leave : 객체 유지 및 플래그 설정
             case 'L':
                 break;
-
-            // Change : 객체 유지 및 닉네임 변경
-            case 'C':
-                // userList를 순회하며 id가 일치하는 유저의 닉네임을 변경
-                for (int j = 0; j < userList.size(); j++) {
-                    if (userList[j].getId() == id) {
-                        userList[j].updateNickname(nickname);
-                    }   
-                }
-                break;
-
             default:
                 break;
         }
     }
 
     // 전체 레코드를 다시 순회하며 출력할 문자열을 만들어 answer에 추가
-    for (int i = 0; i < record.size(); i++) {
-        string action = getAction(record[i]);
-        string id = getId(record[i]);
-    
-        // userList를 순회하며 id와 일치하는 유저의 nickname을 찾아 출력
-        for (int j = 0; j < userList.size(); j++) {
-            if (userList[j].getId() == id) {
-                string nickname = userList[j].getNickname();
-                string actionStr = "";
-                if (action == "Enter") {
-                    actionStr = "들어왔습니다.";
-                } else if (action == "Leave") {
-                    actionStr = "나갔습니다.";
-                } else if (action == "Change") {
-                    break;
-                }
-                string answerStr = nickname + "님이 " + actionStr;
-                answer.push_back(answerStr);
-            }
-        }
+    // userList를 순회하며 id와 일치하는 유저의 nickname을 찾아 출력
+    for (const string& rec : record) {
+        string action = getAction(rec);
+        string id = getId(rec);
+        string nickname = userMap[id].getNickname();
 
+        if (action == "Enter") {
+            answer.push_back(nickname + "님이 들어왔습니다.");
+        } else if (action == "Leave") {
+            answer.push_back(nickname + "님이 나갔습니다.");
+        } // Change의 경우, 출력에 포함되지 않으므로 처리 필요 없음
     }
     return answer;
 }
