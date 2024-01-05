@@ -102,7 +102,7 @@ def calculateCharge(historyDict, baseTime, baseCharge, unitTime, unitCharge):
 
 
 
-    timeIN, timeOut = "", ""
+    timeIn, timeOut = "", ""
     didParkedToday = True
     return charged
             
