@@ -1,6 +1,7 @@
 import json
 
 calculated = []
+parkingDurationHistory = []
 didParkedToday = False
 
 def solution(fees, records):
@@ -23,9 +24,13 @@ def solution(fees, records):
     plateNumberHistory = historyOrderByPlateNumber.keys()
 
     for plateNumber in plateNumberHistory:
-        fee = calculateCharge(historyOrderByPlateNumber[plateNumber], baseTime, baseCharge, unitTime, unitCharge)
-        print("Parking Fee for " + plateNumber + " : " + str(fee))
+        compressParkedTime(historyOrderByPlateNumber[plateNumber])
+        calculateCharge(plateNumber, baseTime, baseCharge, unitTime, unitCharge)
 
+    for receipt in calculated:
+        answer.append(receipt["fee"])
+        
+    # print("Parking Fee for " + plateNumber + " : " + str(fee))
     return answer
 
 def handleInAndOut(recordList):
@@ -36,17 +41,41 @@ def handleInAndOut(recordList):
         if plateNumber not in organizedHistory:
             organizedHistory[plateNumber] = []
         organizedHistory[plateNumber].append(record)
-    print("organizedHistory : \n" + str(json.dumps(organizedHistory, indent=4)))
 
     return organizedHistory
-            
 
-def calculateCharge(historyDict, baseTime, baseCharge, unitTime, unitCharge):
+def calculateCharge(plateNumber, baseTime, baseCharge, unitTime, unitCharge):
     global calculated
     global didParkedToday
+    global parkingDurationHistory
+
+    fee = 0
+    parkingDuration = 0
+
+    for history in parkingDurationHistory:
+        if history["plateNumber"] == plateNumber:
+            parkingDuration += history["parkedDuration"]
+    if parkingDuration <= baseTime:
+        fee = baseCharge
+    else:
+        # 기본 시간을 초과한 경우, baseTime을 제외한 duration에 대해 단위 요금제 적용
+        if (parkingDuration - baseTime) % unitTime == 0:
+            fee = baseCharge + ((parkingDuration - baseTime) // unitTime) * unitCharge
+        else:
+            fee = baseCharge + (((parkingDuration - baseTime) // unitTime) + 1) * unitCharge
+
+    # print("parkingDuration : " + str(parkingDuration))
+    calculated.append({"plateNumber": plateNumber, "fee": fee})
+    calculated = sorted(calculated, key=lambda k: k["plateNumber"])
+    return calculated
+
+def compressParkedTime(historyDict):
+    global calculated
+    global didParkedToday
+    global parkingDurationHistory
+
     isCarParked = False
     timeIn, timeOut, parkedDuration = "", "", 0
-    charged = 0
 
     for history in historyDict:
         if history["inout"] == "IN":
@@ -61,50 +90,23 @@ def calculateCharge(historyDict, baseTime, baseCharge, unitTime, unitCharge):
         # 입차 후 출차 기록이 확인된 경우, timeIn과 timeOut을 이용하여 주차 시간 계산
         if isCarParked == False:
             parkedDuration = calculateParkedTime(timeIn, timeOut)
-            if parkedDuration <= baseTime & didParkedToday == False:
-                charged = baseCharge
-            else:
-                # 첫 출차라면 기본 요금 깐 다음에, 남은 시간에 대한 요금 계산
-                if didParkedToday == False:
-                    charged += baseCharge
-                    parkedDuration -= baseTime
-                    if parkedDuration % unitTime != 0:
-                        charged += (parkedDuration // unitTime + 1) * unitCharge
-                    else:
-                        charged += (parkedDuration // unitTime) * unitCharge
-                else: # 이미 출차한 적이 있다면, 남은 시간에 대한 요금 계산
-                    if parkedDuration % unitTime != 0:
-                        charged += (parkedDuration // unitTime + 1) * unitCharge
-                    else:
-                        charged += (parkedDuration // unitTime) * unitCharge
-
+            
+        # 입차 후 출고 기록이 없고 현재 기록이 마지막 기록인 경우, timeIn과 일마감을 이용하여 주차 시간 계산
         if isCarParked == True and history == historyDict[-1]:
             timeOut = "23:59"
             parkedDuration = calculateParkedTime(timeIn, timeOut)
-            if parkedDuration <= baseTime & didParkedToday == False:
-                charged = baseCharge
-            else:
-                # 첫 출차라면 기본 요금 깐 다음에, 남은 시간에 대한 요금 계산
-                if didParkedToday == False:
-                    charged += baseCharge
-                    parkedDuration -= baseTime
-                    if parkedDuration % unitTime != 0:
-                        charged += (parkedDuration // unitTime + 1) * unitCharge
-                    else:
-                        charged += (parkedDuration // unitTime) * unitCharge
-                else: # 이미 출차한 적이 있다면, 남은 시간에 대한 요금 계산
-                    if parkedDuration % unitTime != 0:
-                        charged += (parkedDuration // unitTime + 1) * unitCharge
-                    else:
-                        charged += (parkedDuration // unitTime) * unitCharge
-
-        calculated.append({"plateNumber": history["plateNumber"], "charged": charged})
+            
+        if parkedDuration != 0:
+            parkingDurationHistory.append({"plateNumber": history["plateNumber"], "parkedDuration": parkedDuration})
+            parkedDuration = 0
+        
+    # print("parkingDurationHistory : \n" + str(json.dumps(parkingDurationHistory, indent=4)))    
+    # for history in parkingDurationHistory:
+        
 
 
-
-    timeIN, timeOut = "", ""
+    timeIn, timeOut = "", ""
     didParkedToday = True
-    return charged
             
 
 def calculateParkedTime(timeIn, timeOut):
