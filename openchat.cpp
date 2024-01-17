@@ -62,8 +62,6 @@ vector<string> solution(vector<string> record) {
             // Leave : 객체 유지 및 플래그 설정
             case 'L':
                 break;
-            default:
-                break;
         }
     }
 
