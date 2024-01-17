@@ -2,7 +2,8 @@
 def solution(k, m, score):
     answer = 0
 
-    score = sort_score(score)
+    # int 배열인 score에 대하여 내림차순 정렬
+    score = sorted(score, reverse=True)
     if (k < score[0]) :
         print("error")
     numberOfBox = len(score) // m
@@ -11,7 +12,3 @@ def solution(k, m, score):
     for i in range(numberOfBox) :
         answer += min(score[i*m:(i+1)*m]) * m
     return answer
-
-# int 배열인 score에 대하여 내림차순 정렬
-def sort_score(score) :
-    return sorted(score, reverse=True)
