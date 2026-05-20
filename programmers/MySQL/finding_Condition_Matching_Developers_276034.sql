@@ -1,0 +1,6 @@
+-- https://school.programmers.co.kr/learn/courses/30/lessons/276034
+
+SELECT DISTINCT ID, EMAIL, FIRST_NAME, LAST_NAME 
+FROM DEVELOPERS AS D JOIN SKILLCODES AS S ON (S.NAME = "C#" OR S.NAME = "Python")
+WHERE (D.SKILL_CODE & S.CODE > 1)
+ORDER BY ID ASC;
