@@ -7,27 +7,23 @@ using namespace std;
 
 int solution(string name) {
     int answer = 0;
-    int n = name.size();
-
-    // 기본값: 오른쪽으로 끝까지 가는 경우
-    int move = n - 1;
-
-    for (int i = 0; i < n; i++) {
-        // 칸 내 이동: 위/아래 중 최소
+    int size = name.size();
+    int move = size - 1;    // 칸 간 이동: 오른쪽으로 쭉 이동
+    
+    for (int i = 0; i < size; i++)
+    {
+        // 칸 내 비교 (`A -> Z`가 1회 잡아먹음)
         answer += min(name[i] - 'A', 'Z' - name[i] + 1);
-
-        // i 다음부터 이어지는 A 구간 찾기
+        
+        // 칸 간 이동 (`move`와 가다가 드리프트 꺾는걸 min으로 비교)
         int next = i + 1;
-        while (next < n && name[next] == 'A') {
+        while (next < size && name[next] == 'A')
+        {
             next++;
         }
-
-        // 오른쪽으로 갔다가 왼쪽으로 꺾기
-        move = min(move, i * 2 + (n - next));
-
-        // 왼쪽으로 갔다가 오른쪽으로 꺾기
-        move = min(move, i + (n - next) * 2);
+        move = min(move, i * 2 + (size - next));    // 오른쪽으로 가다가 왼쪽으로 턴
+        move = min(move, (size - next) * 2 + i);    // 왼쪽으로 가다가 오른쪽으로 턴
     }
-
+    
     return answer + move;
 }
