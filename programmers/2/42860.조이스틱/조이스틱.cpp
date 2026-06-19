@@ -3,7 +3,7 @@
 
 using namespace std;
 // 칸 내: 양방향 중 가까운 쪽 선택
-// 칸 외: 처음부터 오른쪽으로 쭉 vs 처음부터 왼쪽으로 쭉 이동 vs 왼쪽/오른쪽으로 가다가 반대로 꺾기
+// 칸 외: 처음부터 오른쪽으로 쭉(n - 1) vs 왼쪽/오른쪽으로 가다가 가장 긴 A^w 구간에서 반대로 꺾기
 
 int solution(string name) {
     int answer = 0;
