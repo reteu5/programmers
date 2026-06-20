@@ -31,7 +31,6 @@ vector<int> solution(vector<int> progresses, vector<int> speeds) {
         }
         
         answer.push_back(count);
-        count = 0;
     }
     
     return answer;
